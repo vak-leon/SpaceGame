@@ -56,36 +56,46 @@ class Gameplay:
         """
         for i in range(self.num_of_levels):
             self.levels.append(Level())
-        # Level one
+        # Level one - minimal shooting
         self.levels[0].set_invader_locations(Gameplay.__layout_invaders(1, 5))
         self.levels[0].set_asteroids_probability(self.Probability.very_low)
+        self.levels[0].set_shooting_probability(200)  # Very rare
         # Level two
         self.levels[1].set_invader_locations(Gameplay.__layout_invaders(1, 6))
         self.levels[1].set_asteroids_probability(self.Probability.very_low)
+        self.levels[1].set_shooting_probability(180)
         # Level three
         self.levels[2].set_invader_locations(Gameplay.__layout_invaders(2, 5))
         self.levels[2].set_asteroids_probability(self.Probability.low)
+        self.levels[2].set_shooting_probability(160)
         # Level four
         self.levels[3].set_invader_locations(Gameplay.__layout_invaders(2, 6))
         self.levels[3].set_asteroids_probability(self.Probability.low)
+        self.levels[3].set_shooting_probability(140)
         # Level five
         self.levels[4].set_invader_locations(Gameplay.__layout_invaders(3, 5))
         self.levels[4].set_asteroids_probability(self.Probability.medium)
+        self.levels[4].set_shooting_probability(120)
         # Level six
         self.levels[5].set_invader_locations(Gameplay.__layout_invaders(3, 6))
         self.levels[5].set_asteroids_probability(self.Probability.medium)
+        self.levels[5].set_shooting_probability(100)
         # Level seven
         self.levels[6].set_invader_locations(Gameplay.__layout_invaders(4, 5))
         self.levels[6].set_asteroids_probability(self.Probability.high)
+        self.levels[6].set_shooting_probability(self.Probability.low)
         # Level eight
         self.levels[7].set_invader_locations(Gameplay.__layout_invaders(4, 6))
         self.levels[7].set_asteroids_probability(self.Probability.high)
+        self.levels[7].set_shooting_probability(self.Probability.medium)
         # Level nine
         self.levels[8].set_invader_locations(Gameplay.__layout_invaders(5, 5))
         self.levels[8].set_asteroids_probability(self.Probability.very_high)
-        # Level ten
+        self.levels[8].set_shooting_probability(self.Probability.high)
+        # Level ten - most challenging
         self.levels[9].set_invader_locations(Gameplay.__layout_invaders(5, 6))
         self.levels[9].set_asteroids_probability(self.Probability.very_high)
+        self.levels[9].set_shooting_probability(self.Probability.high)
 
     @staticmethod
     def __layout_invaders(lines, columns):
@@ -125,8 +135,9 @@ class Gameplay:
         Initialize a new level
         """
         if self.level == self.num_of_levels:
-            # TODO: this is a very sad ending...
-            self.space.quit()
+            # Player has completed all levels - victory!
+            self.space.victory()
+            return
         if not self.level_initialized:
             self.level_initialized = True
             self.invaders_in_place = False
@@ -160,10 +171,8 @@ class Gameplay:
         self.notification_time = clock() + Const.NOTIFICATION_TIME
         self.player.hit()
         self.spaceship_state = self.SpaceshipState.hit
-        if self.player.get_lives() == 0:
-            # The game will end when there are 0 lives left
-            # TODO: this is a very sad ending...
-            self.space.quit()
+        # Don't call game_over() here - let the explosion animation finish first
+        # The game over will be triggered in spaceship_post_explosion() if lives are 0
 
     def check_hits(self):
         """
@@ -185,10 +194,35 @@ class Gameplay:
                         enemy.hit()
                         self.add_score(enemy)
 
+        # Check if projectiles hit the spaceship
+        for projectile in self.enemies.get_projectiles():
+            if not projectile.is_hit():
+                if self.spaceship_state == self.SpaceshipState.normal and \
+                        pygame.Rect(self.spaceship.hitbox).colliderect(projectile.hitbox):
+                    projectile.away = True
+                    self.spaceship_was_hit()
+
+        # Check if rockets hit projectiles
+        for rocket in self.rockets:
+            if rocket.is_launched():
+                for projectile in self.enemies.get_projectiles():
+                    if not projectile.is_hit() and \
+                            pygame.Rect(rocket.hitbox).colliderect(projectile.hitbox):
+                        rocket.gone()
+                        projectile.destroy()
+                        # Small score bonus for shooting down projectiles (fixed 10 points)
+                        self.player.add_score(10)
+                        break  # Rocket can only hit one projectile
+
     def spaceship_post_explosion(self):
         """
         This is what happens to the spaceship after it explodes
         """
+        # Check if this was the last life - trigger game over after explosion animation completes
+        if self.player.get_lives() == 0:
+            self.space.game_over()
+            return
+
         self.spaceship_state = self.SpaceshipState.blinking
         # Since during the explosion some basic parameters are changed, need to reinitialize
         self.spaceship.reinitialize()
@@ -211,6 +245,12 @@ class Gameplay:
         # Add a random asteroid
         if randint(0, self.current_level().get_asteroids_probability().value) == 0:
             self.enemies.add_asteroid()
+        # Invaders randomly shoot projectiles
+        shooting_prob = self.current_level().get_shooting_probability()
+        # Handle both enum and int values for shooting probability
+        prob_value = shooting_prob.value if hasattr(shooting_prob, 'value') else shooting_prob
+        if self.invaders_in_place and randint(0, prob_value) == 0:
+            self.enemies.invader_shoot()
         # Move all enemies
         self.enemies.move()
 

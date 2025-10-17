@@ -1,5 +1,6 @@
 from asteroid import Asteroid
 from invader import Invader
+from projectile import Projectile
 from random import randint, uniform
 from const import Const
 from resources import Resources
@@ -20,6 +21,7 @@ class Enemies:
         self.game = game
         self.asteroids = []
         self.invaders = []
+        self.projectiles = []
 
     def get_enemies(self):
         """
@@ -83,6 +85,23 @@ class Enemies:
         """
         return len(self.invaders)
 
+    def get_projectiles(self):
+        """
+        Return all enemy projectiles
+        """
+        return self.projectiles
+
+    def invader_shoot(self):
+        """
+        Randomly select an invader to shoot a projectile
+        """
+        # Only shoot if there are invaders that can shoot
+        shooting_invaders = [inv for inv in self.invaders if inv.can_shoot and not inv.is_hit()]
+        if shooting_invaders:
+            shooter = shooting_invaders[randint(0, len(shooting_invaders) - 1)]
+            x, y = shooter.get_projectile_spawn_position()
+            self.projectiles.append(Projectile(x, y))
+
     def move(self):
         """
         Move all existing enemies
@@ -121,6 +140,15 @@ class Enemies:
             elif isinstance(enemy, Invader):
                 self.invaders.remove(enemy)
 
+        # Move projectiles
+        projectiles_to_remove = []
+        for projectile in self.projectiles:
+            projectile.move()
+            if projectile.is_away():
+                projectiles_to_remove.append(projectile)
+        for projectile in projectiles_to_remove:
+            self.projectiles.remove(projectile)
+
     def draw(self):
         """
         Draw all existing enemies
@@ -133,3 +161,5 @@ class Enemies:
             self.game.screen.window.blit(invader.get_current_pic(), invader.get_xy())
             if Const.DEBUG:
                 pygame.draw.rect(self.game.screen.window, (255, 0, 0), invader.get_hitbox(), 1)
+        for projectile in self.projectiles:
+            projectile.draw(self.game.screen.window)

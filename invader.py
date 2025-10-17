@@ -28,6 +28,7 @@ class Invader(Enemy):
         self.speed = (0, Const.INVADER_ENTRY_SPEED)
         self.allow_off_the_screen = True
         self.score = 100
+        self.can_shoot = False  # Only shoot after entry is finished
 
     def set_speed(self, speed):
         """
@@ -68,7 +69,16 @@ class Invader(Enemy):
         """
         self.entry_finished = True
         self.allow_off_the_screen = False
+        self.can_shoot = True  # Enable shooting once in position
         self.move_aside(direction)
+
+    def get_projectile_spawn_position(self):
+        """
+        Return the position where a projectile should spawn (center bottom of invader)
+        """
+        center_x = self.x + self.width / 2
+        bottom_y = self.y + self.height
+        return center_x, bottom_y
 
     def move(self):
         """

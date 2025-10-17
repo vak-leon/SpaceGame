@@ -13,6 +13,7 @@ class Level:
         self.invaders_locations = []
         self.num_of_invaders = 0
         self.asteroids_probability = 0
+        self.shooting_probability = 0
 
     def set_invader_locations(self, locations):
         self.invaders_locations = locations
@@ -34,3 +35,9 @@ class Level:
 
     def get_asteroids_probability(self):
         return self.asteroids_probability
+
+    def set_shooting_probability(self, probability):
+        self.shooting_probability = probability
+
+    def get_shooting_probability(self):
+        return self.shooting_probability

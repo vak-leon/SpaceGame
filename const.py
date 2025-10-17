@@ -80,4 +80,10 @@ class Const:
     PLAYER_LIVES_POSITION = (10, 10)
     PLAYER_SCORE_POSITION = (10, 40)
 
+    PROJECTILE_WIDTH = 8
+    PROJECTILE_HEIGHT = 16
+    PROJECTILE_SPEED = 3
+    PROJECTILE_COLOR = (255, 50, 50)  # Reddish color
+    PROJECTILE_CORE_COLOR = (255, 200, 100)  # Bright yellow-orange core
+
     DEBUG = False
