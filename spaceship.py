@@ -14,6 +14,10 @@ class Spaceship(Interstellar):
     """
     __instance = None
 
+    @classmethod
+    def reset(cls):
+        cls.__instance = None
+
     def __init__(self, x, y, screen):
         super().__init__(images=None,
                          speed=0,

@@ -1,6 +1,7 @@
 from screen import Screen
 from gameplay import Gameplay
 from menu import Menu
+from spaceship import Spaceship
 import pygame
 import enum
 
@@ -47,6 +48,7 @@ class Space(object):
         """
         Initialize and start a new game
         """
+        Spaceship.reset()
         self.game = Gameplay(self, self.screen)
         self.game.initialize_level()
         self.game_state = self.GameState.PLAYING
