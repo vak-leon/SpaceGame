@@ -120,5 +120,6 @@ class Interstellar:
         self.y = self.y - self.height // 2 + orig_height // 2
         self.hitsize = (Const.EXPLOSION_HIT_DELTA, Const.EXPLOSION_HIT_DELTA,
                         self.width - Const.EXPLOSION_HIT_DELTA, self.height - Const.EXPLOSION_HIT_DELTA)
-        explosion = self.explode_sounds[randint(0, self.num_of_explode_sounds)]
-        explosion.play()
+        if self.explode_sounds:
+            explosion = self.explode_sounds[randint(0, self.num_of_explode_sounds)]
+            explosion.play()

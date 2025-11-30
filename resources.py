@@ -85,10 +85,14 @@ class Resources:
                 pygame.image.load("res/invader_13.png"),
                 pygame.image.load("res/invader_14.png")]
 
-    pygame.mixer.pre_init(44100, -16, 2, 1024)
-    pygame.mixer.init()
-
-    wav_launch = [pygame.mixer.Sound("res/launch.wav")]
-
-    wav_explosion = [pygame.mixer.Sound("res/explosion_01.wav"),
-                     pygame.mixer.Sound("res/explosion_02.wav")]
+    try:
+        pygame.mixer.pre_init(44100, -16, 2, 1024)
+        pygame.mixer.init()
+        wav_launch = [pygame.mixer.Sound("res/launch.wav")]
+        wav_explosion = [pygame.mixer.Sound("res/explosion_01.wav"),
+                         pygame.mixer.Sound("res/explosion_02.wav")]
+        audio_enabled = True
+    except pygame.error:
+        wav_launch = []
+        wav_explosion = []
+        audio_enabled = False

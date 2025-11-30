@@ -20,7 +20,7 @@ class Rocket(Interstellar):
         self.current_pic_num = 0
         self.on_board = True
         self.side = side
-        self.launch_sound = Resources.wav_launch[0]
+        self.launch_sound = Resources.wav_launch[0] if Resources.wav_launch else None
         self.x = 0
         self.y = 0
 
@@ -92,7 +92,8 @@ class Rocket(Interstellar):
                 for image in self.original_images:
                     self.images.append(Utils.rotate(image, angle))
             self.on_board = False
-            self.launch_sound.play()
+            if self.launch_sound:
+                self.launch_sound.play()
 
     def reload(self):
         """
